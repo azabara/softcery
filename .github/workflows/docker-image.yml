@@ -4,38 +4,34 @@ on:
   push:
     branches:
       - main
-env:
-  AWS_REGION: eu-central-1
-  ECR_REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
-  ECS_CLUSTER_NAME: softcery-cluster
-  ECS_SERVICE_NAME: softcery-service
-    
+
 jobs:
-  docker:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::101464699422:role/github-actions
-          aws-region: eu-central-1
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
-      - name: Build, tag, and push docker image to Amazon ECR
+      - name: Build and push Docker image
         env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
+          ECR_REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
+          AWS_REGION: eu-central-1
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          echo ${{ secrets.AWS_ACCESS_KEY_ID }} | docker login -u AWS -p $(aws ecr get-login-password --region eu-central-1) 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
+          docker build -t 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository:$IMAGE_TAG .
+          docker push 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository:$IMAGE_TAG
 
       - name: Update ECS service
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: eu-central-1
+          ECS_CLUSTER_NAME: softcery-cluster
+          ECS_SERVICE_NAME: softcery-service
+          ECR_REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
         run: |
           aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment --region $AWS_REGION
