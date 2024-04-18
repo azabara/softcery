@@ -4,9 +4,14 @@ on:
   push:
     branches:
       - main
-
+env:
+  AWS_REGION: eu-central-1
+  ECR_REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
+  ECS_CLUSTER_NAME: softcery-cluster
+  ECS_SERVICE_NAME: softcery-service
+    
 jobs:
-  build:
+  docker:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -14,24 +19,31 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+       
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
               
-      - name: Build and push Docker image
-        env:
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-          ECR_REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
-          AWS_REGION: eu-central-1
-        run: |
-          echo ${{ secrets.AWS_ACCESS_KEY_ID }} | docker login --username AWS --password-stdin $ECR_REGISTRY
-          docker buildx build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+      - name: Set outputs
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Build and push
+        id: build-and-push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.vars.outputs.sha_short }}
 
       - name: Update ECS service
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: $AWS_REGION
-          ECS_CLUSTER_NAME: $ECS_CLUSTER_NAME
-          ECS_SERVICE_NAME: $ECS_SERVICE_NAME
-          ECR_REPOSITORY: $ECR_REPOSITORY
         run: |
           aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment --region $AWS_REGION
