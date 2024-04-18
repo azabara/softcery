@@ -55,4 +55,4 @@ jobs:
           ECS_SERVICE_NAME: softcery-service
           ECR_REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
         run: |
-          echo "aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment --region $AWS_REGION" > dev.null
+          aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment --region $AWS_REGION
