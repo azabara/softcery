@@ -15,22 +15,27 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
         
-      - name: Configure AWS Creds
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}; aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4 # More information on this action can be found below in the 'AWS Credentials' section
+        with:
+          role-to-assume: arn:aws:iam::101464699422:role/github-actions
+          aws-region: eu-central-1
         
-      - name: Build and push Docker image
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push docker image to Amazon ECR
         env:
-          ECR_REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
-          AWS_REGION: eu-central-1
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          echo ${{ secrets.AWS_ACCESS_KEY_ID }} | docker login -u AWS -p $(aws ecr get-login-password --region eu-central-1) 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
-          docker build -t 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository:$IMAGE_TAG .
-          docker push 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository:$IMAGE_TAG
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       - name: Update ECS service
         env:
