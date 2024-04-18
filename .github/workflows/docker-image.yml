@@ -44,8 +44,8 @@ jobs:
             REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
             IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $REPOSITORY:${{ env.github.sha }} .
-          docker push $REPOSITORY:${{ env.github.sha }}
+          docker build -t $REPOSITORY:${{ env.IMAGE_TAG }} .
+          docker push $REPOSITORY:${{ env.IMAGE_TAG }}
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
