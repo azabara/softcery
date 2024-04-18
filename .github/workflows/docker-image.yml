@@ -38,7 +38,7 @@ jobs:
           REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t . $REGISTRY/$REPOSITORY:$IMAGE_TAG -f app/Dockerfile
+          docker build -f app/Dockerfile -t $REGISTRY/$REPOSITORY:$IMAGE_TAG 
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       - name: Update ECS service
