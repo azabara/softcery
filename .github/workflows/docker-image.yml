@@ -37,9 +37,11 @@ jobs:
         env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
             REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
+            IMAGE_TAG: ${{ github.sha }}
         run: |
           docker pull $REPOSITORY:latest  || true
-          docker build --target runtime-image --cache-from $REPOSITORY:latest -t $REPOSITORY:$VERSION -t $REPOSITORY:latest .
+          docker build --target runtime-image --cache-from $REPOSITORY:latest -t $REPOSITORY:${{ env.github.sha }} -t $REPOSITORY:latest .
+          
           
 
 
