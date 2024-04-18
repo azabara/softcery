@@ -17,25 +17,21 @@ jobs:
               
       - name: Build and push Docker image
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: eu-central-1
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-          ECR_REPOSITORY: $ECR_REPOSITORY
-          AWS_ACCOUNT_ID: 101464699422
-          IMAGE_TAG: ${{ github.sha }}
+          ECR_REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
+          AWS_REGION: eu-central-1
         run: |
-          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }} | aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }} | aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.region.amazonaws.com
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo ${{ secrets.AWS_ACCESS_KEY_ID }} | aws ecr --region $AWS_REGION get-login-password | docker login --username AWS --password-stdin $ECR_REGISTRY
+          docker buildx build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
       - name: Update ECS service
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: eu-central-1
-          ECS_CLUSTER_NAME: softcery-cluster
+          AWS_REGION: $AWS_REGION
+          ECS_CLUSTER_NAME: $ECS_CLUSTER_NAME
           ECS_SERVICE_NAME: $ECS_SERVICE_NAME
-          ECR_REPOSITORY: softcery-service
+          ECR_REPOSITORY: $ECR_REPOSITORY
         run: |
           aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment --region $AWS_REGION
