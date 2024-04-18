@@ -2,7 +2,7 @@
 FROM golang:latest AS builder
 
 # Set the working directory inside the container
-WORKDIR /app
+#WORKDIR /app
 
 RUN go get -u github.com/gin-gonic/gin
 # Copy the Go module files
@@ -12,19 +12,19 @@ RUN go get -u github.com/gin-gonic/gin
 #RUN go mod download
 
 # Copy the rest of the source code
-COPY . .
+#COPY . .
 
 # Build the Go application
-RUN go build -o /app/server .
+RUN go build -o server .
 
 # Use a minimal base image for the final container
 FROM alpine:latest
 
 # Set the working directory inside the container
-WORKDIR /app
+#WORKDIR /app
 
 # Copy the binary from the builder stage to the final image
-COPY --from=builder /app/server .
+COPY --from=builder server .
 
 # Expose port 8080 to the outside world
 EXPOSE 8080
