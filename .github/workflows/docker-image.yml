@@ -25,7 +25,7 @@ jobs:
           AWS_ACCOUNT_ID: 101464699422
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID | aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY | aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.region.amazonaws.com
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }} | aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }} | aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.region.amazonaws.com
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
