@@ -1,5 +1,5 @@
 # Stage 1: Build the Go binary
-FROM golang:latest AS builder
+FROM golang:1.17 AS builder
 
 WORKDIR /app
 
@@ -14,7 +14,7 @@ COPY . .
 RUN go build -o server .
 
 # Stage 2: Create a lightweight image with only the binary
-FROM golang:latest
+FROM golang:1.17
 
 WORKDIR /
 
