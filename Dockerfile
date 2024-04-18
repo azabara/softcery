@@ -1,10 +1,10 @@
 # Stage 1: Build the Go binary
 FROM golang:1.17 AS builder
 
-WORKDIR /app
+WORKDIR /
 
 # Copy go.mod and go.sum to download dependencies
-COPY app/* ./
+COPY app/*.* ./
 RUN go mod download
 
 # Copy the rest of the source code
