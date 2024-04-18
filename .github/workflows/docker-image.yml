@@ -21,7 +21,7 @@ jobs:
           ECR_REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
           AWS_REGION: eu-central-1
         run: |
-          docker login --username AWS --password ${{ secrets.AWS_ACCESS_KEY_ID }} --password ${{ secrets.AWS_SECRET_ACCESS_KEY }} $ECR_REGISTRY
+          echo ${{ secrets.AWS_ACCESS_KEY_ID }} | docker login --username AWS --password-stdin $ECR_REGISTRY
           docker buildx build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
