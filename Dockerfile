@@ -4,11 +4,12 @@ FROM golang:latest AS builder
 # Set the working directory inside the container
 WORKDIR /app
 
+RUN go get -u github.com/gin-gonic/gin
 # Copy the Go module files
-COPY go.mod go.sum ./
+#COPY go.mod go.sum ./
 
 # Download dependencies
-RUN go mod download
+#RUN go mod download
 
 # Copy the rest of the source code
 COPY . .
