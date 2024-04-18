@@ -1,33 +1,28 @@
-# Use the official golang image as the base image
+# Stage 1: Build the Go binary
 FROM golang:latest AS builder
 
-# Set the working directory inside the container
-#WORKDIR /app
+WORKDIR /app
 
-RUN go get -u github.com/gin-gonic/gin
-# Copy the Go module files
-#COPY go.mod go.sum ./
-
-# Download dependencies
-#RUN go mod download
+# Copy go.mod and go.sum to download dependencies
+COPY go.* ./
+RUN go mod download
 
 # Copy the rest of the source code
-#COPY . .
+COPY . .
 
-# Build the Go application
+# Build the Go binary
 RUN go build -o server .
 
-# Use a minimal base image for the final container
-FROM alpine:latest
+# Stage 2: Create a lightweight image with only the binary
+FROM golang:latest
 
-# Set the working directory inside the container
-#WORKDIR /app
+WORKDIR /
 
-# Copy the binary from the builder stage to the final image
-COPY --from=builder server .
+# Copy the binary from the builder stage
+COPY --from=builder /app/server .
 
-# Expose port 8080 to the outside world
+# Expose port 8080
 EXPOSE 8080
 
-# Command to run the server
+# Set the entry point
 CMD ["./server"]
