@@ -33,14 +33,19 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Cache Docker images
+        uses: ScribeMD/docker-cache@0.5.0
+        with:
+          key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
+
       - name: Build, tag, and push docker image to Amazon ECR
         env:
             REGISTRY: ${{ steps.login-ecr.outputs.registry }}
             REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
             IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $REPOSITORY:latest .
-          docker push $REPOSITORY:latest
+          docker build -t $REPOSITORY:${{ env.github.sha }} .
+          docker push $REPOSITORY:${{ env.github.sha }}
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
