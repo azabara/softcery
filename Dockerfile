@@ -1,25 +1,13 @@
 # Stage 1: Build the Go binary
-FROM golang:latest AS builder
+FROM golang:alpine
 
-WORKDIR /app
+WORKDIR /build
 
 # Copy go.mod and go.sum to download dependencies
-COPY go.* ./
-RUN go mod download
-
-# Copy the rest of the source code
-COPY . .
+COPY *.* ./
 
 # Build the Go binary
-RUN go build -o server .
-
-# Stage 2: Create a lightweight image with only the binary
-FROM golang:latest
-
-WORKDIR /
-
-# Copy the binary from the builder stage
-COPY --from=builder /app/server .
+RUN go build -o server main.go
 
 # Expose port 8080
 EXPOSE 8080
