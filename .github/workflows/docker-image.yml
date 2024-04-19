@@ -54,8 +54,8 @@ jobs:
           REPOSITORY: 101464699422.dkr.ecr.eu-central-1.amazonaws.com/softcery-repository
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker buildx build --platform linux/amd64 -t $ECR_REPOSITORY:$IMAGE_TAG --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache .
-          docker push $ECR_REPOSITORY:$IMAGE_TAG
+          docker buildx build --platform linux/amd64 -t $REPOSITORY:$IMAGE_TAG --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache .
+          docker push $REPOSITORY:$IMAGE_TAG
 
       - name: Save Docker Buildx cache
         run: |
