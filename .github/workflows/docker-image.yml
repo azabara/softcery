@@ -39,9 +39,7 @@ jobs:
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
-          restore-keys: |
-            ${{ runner.os }}-docker-
-
+          
       - name: Load Docker image cache
         if: steps.docker-cache.outputs.cache-hit == 'true'
         run: docker load -i /tmp/.buildx-cache/image.tar
@@ -54,17 +52,6 @@ jobs:
         run: |
           docker build -t $REPOSITORY:${{ env.IMAGE_TAG }} .
           docker push $REPOSITORY:${{ env.IMAGE_TAG }}
-
-      - name: Save Docker image cache
-        if: steps.docker-cache.outputs.cache-hit != 'true'
-        run: docker save -o /tmp/.buildx-cache/image.tar $(docker images -q)
-  
-      - name: Cache Docker image
-        if: steps.docker-cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
