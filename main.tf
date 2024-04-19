@@ -191,6 +191,7 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_spot_cluster_provider" {
   capacity_providers   = [aws_ecs_capacity_provider.ecs_spot_capacity_provider.name]
 }
 
+
 # Create ECR Task
 resource "aws_ecs_task_definition" "softcery_task_definition" {
   family                   = "softcery-task"
@@ -203,7 +204,7 @@ resource "aws_ecs_task_definition" "softcery_task_definition" {
   container_definitions = jsonencode([
     {
       "name": "server",
-      "image": "${aws_ecr_repository.softcery_repository.repository_url}:latest",
+      "image": aws_ecr_repository.softcery_repository.repository_url,
       "cpu": 256,
       "memory": 512,
       "essential": true,
